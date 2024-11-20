@@ -1,0 +1,481 @@
+<!doctype html>
+<!--
+  Private Notes - Secure Personal Notes Manager
+  Author: Mounir IDRASSI <mounir@idrix.fr>
+  Date: 2024-11-20
+  License: MIT (https://opensource.org/license/MIT)
+-->
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Open Graph Metadata -->
+    <meta
+      property="og:title"
+      content="Private Notes – Secure Personal Notes Management"
+    />
+    <meta
+      property="og:description"
+      content="Private Notes is a secure, open-source app for managing personal notes locally. With encryption options and no cloud storage, your data stays private and protected. Manage your notes with ease using customizable tags and backup features."
+    />
+    <meta
+      property="og:image"
+      content="https://notes.idrix.fr/private-notes-card.jpg"
+    />
+    <meta property="og:url" content="https://notes.idrix.fr" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Private Notes – Secure Personal Notes Management"
+    />
+    <meta
+      name="twitter:description"
+      content="Manage your personal notes securely with Private Notes. An open-source, encrypted app that keeps your data private and stored locally, with no cloud required."
+    />
+    <meta
+      name="twitter:image"
+      content="https://notes.idrix.fr/private-notes-card.jpg"
+    />
+
+    <!-- Mobile Web App Metadata -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Private Notes" />
+
+    <!-- Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+    <link rel="manifest" href="manifest.json" />
+
+    <!-- Stylesheets with Subresource Integrity (SRI) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="styles.css" />
+
+    <title>Private Notes App</title>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>Private Notes</h1>
+        <p class="subtitle">
+          An open source project by
+          <a
+            href="https://github.com/idrassi"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Mounir IDRASSI</a
+          >
+        </p>
+      </header>
+
+      <section id="intro-text" class="intro-section">
+        <button class="close-intro" aria-label="Close introduction">
+          <i class="fas fa-times"></i>
+        </button>
+        <p>
+          <strong>Private Notes</strong> is a secure, user-friendly app for
+          managing personal notes locally.
+          <span id="intro-full" style="display: none">
+            All data is stored in your browser with optional encryption. No
+            cloud or external servers are used. With password-based encryption,
+            only you can access your protected notes, and your password is never
+            stored or shared. Customizable notes, tags, and an export/import
+            feature ensure easy backup and restore while keeping your data
+            private and secure. Private Notes is an open-source project created
+            by
+            <a
+              href="https://github.com/idrassi"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Mounir IDRASSI</a
+            >. This app was built with the goal of providing users with a secure
+            and user-friendly platform for managing personal notes locally. For
+            more information or to contribute to the project, visit our
+            <a
+              href="https://github.com/idrassi/private-notes"
+              target="_blank"
+              rel="noopener noreferrer"
+              >GitHub repository</a
+            >.
+          </span>
+        </p>
+        <button id="read-more" class="btn btn-small">Read More</button>
+      </section>
+
+      <div class="search-container">
+        <input
+          type="search"
+          id="search-input"
+          placeholder="Search notes..."
+          aria-label="Search notes"
+        />
+        <button id="search-button" aria-label="Perform search">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+
+      <main>
+        <div id="active-filters" class="active-filters"></div>
+        <div
+          id="notes-container"
+          aria-live="polite"
+          aria-label="Notes Container"
+        ></div>
+      </main>
+
+      <!-- Note Modal -->
+      <div
+        id="note-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="note-modal-title"
+      >
+        <div
+          id="note-modal-content"
+          class="modal-content modern-modal edit-note-modal"
+        >
+          <div class="edit-note-header">
+            <button
+              id="close-modal"
+              class="icon-button"
+              aria-label="Close Modal"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+            <input
+              type="text"
+              id="note-title"
+              class="note-title-input"
+              placeholder="Untitled Note"
+              aria-label="Note Title"
+            />
+            <div class="note-options">
+              <button
+                id="color-option"
+                class="icon-button"
+                aria-label="Change Color"
+              >
+                <i class="fas fa-palette"></i>
+              </button>
+              <button id="tag-option" class="icon-button" aria-label="Add Tags">
+                <i class="fas fa-tags"></i>
+              </button>
+              <button
+                id="encrypt-option"
+                class="icon-button"
+                aria-label="Encrypt Note"
+              >
+                <i class="fas fa-lock"></i>
+              </button>
+            </div>
+          </div>
+          <form id="note-form">
+            <textarea
+              id="note-content"
+              class="form-input"
+              placeholder="Start typing your note..."
+              required
+              aria-label="Note Content"
+            ></textarea>
+            <div id="color-picker" class="option-panel" style="display: none">
+              <input
+                type="color"
+                id="note-color"
+                value="#ffffff"
+                aria-label="Note Color Picker"
+              />
+            </div>
+            <div id="tag-input" class="option-panel" style="display: none">
+              <input
+                type="text"
+                id="note-tags-input"
+                class="note-tags"
+                placeholder="Add tags (comma-separated)"
+                aria-label="Note Tags"
+              />
+            </div>
+            <div
+              id="encrypt-checkbox"
+              class="option-panel"
+              style="display: none"
+            >
+              <label>
+                <input
+                  type="checkbox"
+                  id="note-encrypted"
+                  aria-label="Encrypt Note Checkbox"
+                />
+                Encrypt note
+              </label>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Confirm Modal -->
+      <div
+        id="confirm-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+      >
+        <div class="modal-content">
+          <h2 id="confirm-title">Confirm Action</h2>
+          <p id="confirm-message"></p>
+          <div class="modal-actions">
+            <button id="confirm-cancel" class="btn">Cancel</button>
+            <button id="confirm-confirm" class="btn btn-danger">Confirm</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- View Modal -->
+      <div
+        id="view-modal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="view-modal-title"
+      >
+        <div class="modal-content modern-modal view-note-modal">
+          <div class="view-note-header">
+            <button
+              id="close-view-modal"
+              class="icon-button"
+              aria-label="Close Modal"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+            <h2 id="view-note-title" class="note-title-display"></h2>
+            <div class="note-options">
+              <button
+                id="edit-note-btn"
+                class="icon-button"
+                aria-label="Edit Note"
+              >
+                <i class="fas fa-edit"></i>
+              </button>
+            </div>
+          </div>
+          <form id="view-note-form">
+            <textarea
+              id="view-note-content"
+              class="form-input"
+              readonly
+              aria-label="View Note Content"
+            ></textarea>
+            <div
+              id="view-note-tags"
+              class="note-tags"
+              aria-label="View Note Tags"
+            ></div>
+            <div
+              id="view-note-modified"
+              class="view-note-modified"
+              aria-label="Note Last Modified"
+            ></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Context Menus -->
+    <!-- Note Context Menu -->
+    <div
+      id="note-context-menu"
+      class="custom-context-menu"
+      role="menu"
+      aria-label="Note Context Menu"
+    >
+      <ul>
+        <li id="context-view" role="menuitem">View</li>
+        <li id="context-edit" role="menuitem">Edit</li>
+        <li id="context-duplicate" role="menuitem">Duplicate</li>
+        <li id="context-delete" role="menuitem">Delete</li>
+      </ul>
+    </div>
+    <!-- About Bottom Sheet -->
+    <div
+      class="bottom-sheet"
+      id="info-sheet-about"
+      aria-labelledby="about-sheet-title"
+    >
+      <div id="sheet-about-header" class="sheet-header">
+        <div class="sheet-drag-handle"></div>
+        <div class="sheet-header-content">
+          <h2 id="about-sheet-title">About Private Notes v1.75</h2>
+          <button
+            id="close-about-sheet"
+            class="icon-button"
+            aria-label="Close About Sheet"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div id="sheet-about-content" class="sheet-content">
+        <section>
+          <p>
+            <strong>Private Notes</strong> is an open-source web application
+            designed to provide users with a secure, private, and offline method
+            for storing their personal notes.
+          </p>
+          <p>
+            Created by
+            <a href="https://github.com/idrassi" target="_blank"
+              >Mounir IDRASSI</a
+            >, this app ensures complete user privacy by storing all notes
+            locally on the user's device. No external servers, cloud storage, or
+            data-sharing mechanisms are involved. All data is stored in your
+            browser with optional encryption. With password-based encryption,
+            only you can access your protected notes and your password is never
+            stored or shared. Customizable notes, tags, and an export/import
+            feature ensure easy backup and restore while keeping your data
+            private and secure.
+          </p>
+
+          <h2>Technical Details</h2>
+          <p>
+            <strong>Data Storage:</strong> Notes are primarily stored using
+            <strong>IndexedDB</strong>, a robust, low-level API for storing
+            structured data. If IndexedDB is not supported by the browser, the
+            app will automatically fall back to using
+            <strong>localStorage</strong> to store the notes as JSON strings.
+          </p>
+          <p>
+            IndexedDB ensures that even large amounts of data can be managed
+            efficiently, while localStorage provides a simpler but effective
+            alternative for older browsers.
+          </p>
+
+          <p>
+            <strong>Encryption:</strong> The app offers password-based
+            encryption for added security. When a user chooses to encrypt a
+            note, the content is encrypted locally before being stored. The
+            encryption process uses the following:
+          </p>
+          <ul>
+            <li>
+              <strong>Key Derivation:</strong> PBKDF2-HMAC-SHA256 with 1,000,000
+              iterations is used to derive a strong encryption key from your
+              password. This makes it computationally expensive for attackers to
+              brute-force the key.
+            </li>
+            <li>
+              <strong>Encryption Algorithm:</strong> AES-GCM (Advanced
+              Encryption Standard in Galois/Counter Mode) is used for encrypting
+              the note content. AES-GCM provides both confidentiality
+              (encryption) and integrity (tamper detection). This ensures that
+              your notes are secure and that any unauthorized modification will
+              be detected.
+            </li>
+            <li>
+              <strong>Salt and IV:</strong> A unique random salt and
+              initialization vector (IV) are generated for each encrypted note,
+              further enhancing security.
+            </li>
+          </ul>
+          <p>
+            The encryption and decryption processes are handled entirely within
+            the browser using the Web Crypto API. Importantly, the user's
+            password is never stored or transmitted. Only encrypted data is
+            stored locally, and decryption is possible only by providing the
+            correct password during access.
+          </p>
+
+          <p>
+            <strong>Backup and Restore:</strong> Users can easily back up their
+            notes by exporting them to a JSON file. Similarly, notes can be
+            restored by importing the JSON file back into the app. No external
+            services are involved in this process, ensuring data privacy is
+            maintained.
+          </p>
+
+          <p>
+            You can find the source code and contribute to the project by
+            visiting our
+            <a href="https://github.com/idrassi/private-notes" target="_blank"
+              >GitHub repository</a
+            >.
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <!-- Privacy Bottom Sheet -->
+    <div
+      class="bottom-sheet"
+      id="info-sheet-privacy"
+      aria-labelledby="privacy-sheet-title"
+    >
+      <div id="sheet-privacy-header" class="sheet-header">
+        <div class="sheet-drag-handle"></div>
+        <div class="sheet-header-content">
+          <h2 id="privacy-sheet-title">Privacy Policy</h2>
+          <button
+            id="close-privacy-sheet"
+            class="icon-button"
+            aria-label="Close Privacy Sheet"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div id="sheet-privacy-content" class="sheet-content">
+        <section>
+          <p>
+            At <strong>Private Notes</strong>, we value your privacy. This web
+            application is designed to be fully offline, ensuring that no data
+            is ever transmitted outside your device. All notes are stored
+            locally in your browser using localStorage or IndexedDB.
+          </p>
+          <p><strong>Key Privacy Principles:</strong></p>
+          <ul>
+            <li>
+              <strong>No external servers:</strong> All data is stored locally
+              on your device. The app does not use any form of cloud storage or
+              external servers.
+            </li>
+            <li>
+              <strong>No tracking or analytics:</strong> This app does not
+              collect any personal data, usage statistics, or analytics. It
+              operates independently on your device.
+            </li>
+            <li>
+              <strong>Optional encryption:</strong> The app offers
+              password-based encryption for individual notes. Your password is
+              never stored or transmitted. Only encrypted notes are saved
+              locally, ensuring that only you can access them.
+            </li>
+            <li>
+              <strong>Backup and restore:</strong> You can export your notes in
+              JSON format for backup purposes and import them at any time. No
+              third-party services are involved in this process.
+            </li>
+          </ul>
+          <p>
+            This privacy policy reflects the app’s core commitment to user
+            privacy and security. As no data leaves your machine, there is no
+            need for cookies, third-party services, or any form of external
+            communication.
+          </p>
+        </section>
+      </div>
+    </div>
+    <script defer src="script.js"></script>
+  </body>
+</html>

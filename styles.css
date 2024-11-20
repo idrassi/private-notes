@@ -1,0 +1,1471 @@
+/*!
+ * Private Notes - Secure Personal Notes Manager
+ * Author: Mounir IDRASSI <mounir@idrix.fr>
+ * Date: 2024-11-20
+ * License: MIT (https://opensource.org/license/MIT)
+ */
+
+/* ---------------------------------------
+   CSS Variables for Theme and Reusability
+-----------------------------------------*/
+:root {
+  --primary-color: #007bff;
+  --primary-hover: #0056b3;
+  --secondary-color: #28a745;
+  --secondary-hover: #218838;
+  --background-color: #f0f0f0;
+  --modal-bg-color: #ffffff;
+  --text-color: #ffffff;
+  --button-text-color: var(--text-color);
+  --close-button-color: #aaa;
+  --close-button-hover: #000;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --modal-shadow: rgba(0, 0, 0, 0.2);
+}
+
+/* ---------------------------------------
+   Global Box-Sizing
+-----------------------------------------*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------
+   General Styles
+-----------------------------------------*/
+html,
+body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-color);
+  font-family: Arial, sans-serif;
+  overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+main {
+  flex-grow: 1; /* Make main grow and take available space */
+}
+
+h1 {
+  font-size: clamp(1.5rem, 2.5vw, 2.5rem);
+}
+
+.subtitle {
+  font-size: clamp(0.875rem, 1.2vw, 1.25rem);
+}
+
+/* ---------------------------------------
+   App Container
+-----------------------------------------*/
+#app {
+  width: 90%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+/* ---------------------------------------
+   Header
+-----------------------------------------*/
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#header-buttons {
+  display: flex;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  background-color: var(--background-color);
+  padding: 10px 0;
+  z-index: 100;
+}
+
+.header-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 15px;
+  font-size: 1rem;
+  background-color: var(--primary-color);
+  color: var(--button-text-color);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.header-btn:hover,
+.header-btn:focus {
+  background-color: var(--primary-hover);
+  outline: none;
+}
+
+/* ---------------------------------------
+   Search
+-----------------------------------------*/
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+#search-input {
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 20px 0 0 20px;
+  outline: none;
+  transition: all 0.3s ease;
+  width: 200px;
+}
+
+#search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+#search-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 0 20px 20px 0;
+  transition: background-color 0.3s ease;
+}
+
+#search-button:hover {
+  background-color: var(--primary-hover);
+}
+
+/* Search Results */
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1010;
+  display: block;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 50px;
+}
+
+.search-result-item {
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-result-item:hover {
+  background-color: #f0f0f0;
+}
+
+.search-result-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.search-result-preview {
+  font-size: 0.9em;
+  color: #666;
+}
+
+mark {
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* Responsive design for search */
+@media (max-width: 768px) {
+  .search-container {
+    width: 100%;
+  }
+
+  #search-input {
+    width: calc(100% - 50px);
+  }
+}
+
+/* ---------------------------------------
+   Notes Container and Notes
+-----------------------------------------*/
+#notes-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+/* Responsive Grid Adjustments */
+@media (max-width: 600px) {
+  #notes-container {
+    grid-template-columns: 1fr;
+    gap: 10px; /* Reduced grid gap */
+  }
+
+  #app {
+    width: 100%; /* Utilize full width */
+    padding: 15px; /* Reduced padding from 20px */
+    margin: 0; /* Remove auto margins */
+  }
+
+  .search-container {
+    width: 100%;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+  #notes-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .note {
+    width: calc(50% - 10px);
+  }
+}
+
+@media (min-width: 901px) {
+  #notes-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .note {
+    width: calc(33% - 10px);
+  }
+}
+
+/* Note Card */
+.note {
+  /* min-width: 200px; */ /* No explicit width to allow grid to control sizing */
+  background-color: white;
+  padding: 15px;
+  padding-bottom: 40px; /* Make room for the buttons */
+  border-radius: 8px;
+  box-shadow: 0 0 10px var(--shadow-color);
+  position: relative;
+  word-wrap: break-word;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+  /* Ensure full width within grid cell */
+  width: 100%;
+}
+
+.note:hover {
+  box-shadow: 0 4px 12px var(--shadow-color);
+  transform: translateY(-2px);
+}
+
+.note .note-preview-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+  word-break: break-word; /* Allows long titles to wrap */
+}
+
+.note .note-preview {
+  word-break: break-word; /* Allows long preview to wrap */
+}
+
+.note .note-content {
+  white-space: pre-wrap;
+}
+
+.note-content {
+  flex-grow: 1;
+  word-break: break-word;
+}
+
+.note-tags {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  font-size: 16px;
+}
+
+.tag {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.note-last-modified {
+  font-size: 0.8em;
+  color: #666666;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+.note-actions {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  right: 5px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.note:hover .note-actions {
+  opacity: 1;
+}
+
+.note-actions button {
+  padding: 2px 5px;
+  font-size: 0.8em;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.note-actions button:hover {
+  background-color: #e0e0e0;
+}
+
+.note-actions button:focus {
+  background-color: var(--secondary-hover);
+  outline: none;
+}
+
+/* ---------------------------------------
+   Floating Action Button (FAB) and Menu
+-----------------------------------------*/
+.fab {
+  position: fixed;
+  bottom: env(safe-area-inset-bottom, 20px);
+  right: env(safe-area-inset-right, 20px);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s;
+  z-index: 1002;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+}
+
+.fab i {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.fab:hover {
+  background-color: var(--primary-hover);
+}
+
+.fab-menu {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1001;
+}
+
+.fab-menu.show {
+  display: flex;
+}
+
+.fab-item {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition:
+    background-color 0.3s,
+    transform 0.3s;
+}
+
+.fab-item:hover {
+  background-color: var(--primary-hover);
+  transform: scale(1.05);
+}
+
+.fab-item i {
+  font-size: 18px;
+}
+
+.fab-item.active {
+  background-color: var(--primary-hover);
+}
+
+/* Responsive Adjustments for FAB */
+@media (min-width: 768px) {
+  .fab {
+    bottom: 40px;
+    right: 40px;
+  }
+
+  .fab-menu {
+    bottom: 100px;
+    right: 40px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .fab {
+    bottom: 60px;
+    right: 60px;
+  }
+
+  .fab-menu {
+    bottom: 120px;
+    right: 60px;
+  }
+}
+
+/* ---------------------------------------
+   Filter Menu
+-----------------------------------------*/
+.filter-menu {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 250px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 1000;
+}
+
+.filter-menu.show {
+  display: flex;
+}
+
+#tag-search {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+#popular-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-chip {
+  background-color: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.tag-chip:hover {
+  background-color: #e0e0e0;
+}
+
+.tag-chip.selected {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+#sort-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#sort-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+#active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 16px;
+}
+
+.filter-chip {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.filter-chip i {
+  font-size: 12px;
+}
+
+#close-filter-menu {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#close-filter-menu:hover {
+  background-color: var(--primary-hover);
+}
+
+/* Responsive Adjustments for Filter Menu */
+@media (max-width: 600px) {
+  .filter-menu {
+    width: calc(100% - 40px);
+    left: 20px;
+    right: 20px;
+  }
+}
+
+/* ---------------------------------------
+   Modals
+-----------------------------------------*/
+/* General Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+}
+
+/* Modern Modal */
+.modern-modal {
+  background-color: var(--modal-bg-color);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0px 4px 15px var(--modal-shadow);
+  width: 90%;
+  max-width: 600px;
+  box-sizing: border-box;
+  animation: fadeIn 0.3s ease-in-out;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+/* Modal Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Close Button */
+.close {
+  color: var(--close-button-color);
+  font-size: 28px;
+  font-weight: bold;
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close:hover,
+.close:focus {
+  color: var(--close-button-hover);
+  outline: none;
+}
+
+/* Note Form */
+#note-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow-y: auto;
+  max-height: calc(90vh - 150px);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-input {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  position: sticky;
+  bottom: 0;
+  background-color: var(--modal-bg-color);
+  padding-top: 10px;
+}
+
+/* Confirm Modal */
+#confirm-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+#confirm-modal .modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+#confirm-modal h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+#confirm-modal p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+#confirm-modal .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+#confirm-modal button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#confirm-modal #confirm-cancel {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+#confirm-modal #confirm-delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* View Note Modal */
+.view-note-modal,
+.edit-note-modal {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* adjust the view modal content layout */
+.view-note-modal {
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #f8f8f8;
+}
+
+.view-note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  background-color: #f8f8f8;
+}
+
+.view-note-header h2,
+.edit-note-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+  color: #333;
+}
+
+/* Make view note form to use flex layout */
+#view-note-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+#note-content {
+  width: 100%;
+  height: calc(100vh - 120px);
+  padding: 20px;
+  border: none;
+  resize: none;
+  font-size: 16px;
+}
+
+#view-note-content {
+  flex: 1;
+  height: auto;
+  min-height: 200px;
+  margin-bottom: 0px;
+  resize: none;
+  overflow-y: auto;
+  font-size: 16px;
+}
+
+.view-note-modified {
+  padding: 10px 0;
+  color: #666666;
+  font-style: italic;
+}
+
+.note-options {
+  display: flex;
+  gap: 10px;
+}
+
+#note-color {
+  height: 40px;
+  padding: 5px;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+/* Password Modal */
+#password-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+}
+
+.password-modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  max-width: 90%;
+}
+
+.password-modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+#password-input,
+#password-confirm {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+#submit-password,
+#cancel-password {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+#submit-password:disabled {
+  background-color: #cccccc; /* Color when disabled */
+  cursor: not-allowed;
+}
+
+#submit-password {
+  margin-left: 5px;
+}
+
+#cancel-password {
+  margin-right: 5px;
+}
+
+#submit-password:hover:not(:disabled),
+#cancel-password:hover {
+  background-color: #0056b3;
+}
+
+#remember-password {
+  margin-right: 5px;
+}
+
+/* Option Panel */
+.option-panel {
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Note Title Input and Display */
+.note-title-input {
+  font-size: 1.2em;
+  font-weight: bold;
+  border: none;
+  background: transparent;
+  width: 100%;
+  padding: 5px;
+  margin-right: 10px;
+}
+
+.note-title-input:focus {
+  outline: none;
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.note-title-display {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0;
+  padding: 5px;
+}
+
+/* Encrypted Icon in Note Title */
+.encrypted-icon {
+  margin-left: 8px;
+  color: #dc3545;
+  font-size: 0.9em;
+}
+
+/* Encryption Button Active State */
+.icon-button.active-encryption {
+  color: #dc3545;
+}
+
+.icon-button.active-encryption:hover {
+  color: #a71d2a;
+}
+
+/* ---------------------------------------
+   Notifications
+-----------------------------------------*/
+/* Notification Container */
+#notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.notification {
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-in-out;
+}
+
+.notification.info {
+  background-color: #2196f3;
+}
+
+.notification.success {
+  background-color: #4caf50;
+}
+
+.notification.warning {
+  background-color: #ffc107;
+}
+
+.notification.error {
+  background-color: #f44336;
+}
+
+.notification.fade-out {
+  animation: fadeOut 0.5s ease-in-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Update Notification */
+.update-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.update-notification button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#update-now {
+  background-color: #4caf50;
+  color: white;
+}
+
+#update-later {
+  background-color: #f44336;
+  color: white;
+}
+
+/* ---------------------------------------
+   Buttons and Icon Buttons
+-----------------------------------------*/
+.btn,
+.icon-button {
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+}
+
+.btn:hover,
+.icon-button:hover {
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 12px;
+  color: #007bff;
+  transition: color 0.3s;
+  z-index: 1; /* Ensure button stays above other content */
+}
+
+.icon-button:hover {
+  color: #0056b3;
+}
+
+.icon-button svg {
+  vertical-align: middle;
+}
+
+/* Prevent text selection on touch */
+.icon-button i {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Add touch feedback styles */
+.icon-button.touch-active {
+  background-color: rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s;
+}
+
+/* ---------------------------------------
+   Intro Text and Read More
+-----------------------------------------*/
+.intro-section {
+  position: relative;
+  padding-right: 30px; /* Make room for close button */
+}
+
+.close-intro {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 5px;
+  transition: color 0.3s;
+}
+
+.close-intro:hover {
+  color: #000;
+}
+
+.intro-section.hidden {
+  display: none;
+}
+
+#intro-text {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+#intro-text p {
+  margin: 0 0 10px 0;
+}
+
+#read-more {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+}
+
+#read-more:hover {
+  background-color: var(--primary-hover);
+}
+
+/* Back to Home Link */
+.back-to-home {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 15px;
+  background-color: var(--primary-color);
+  color: var(--button-text-color);
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.back-to-home:hover {
+  background-color: var(--primary-hover);
+}
+
+/* ---------------------------------------
+   Custom Context Menu
+-----------------------------------------*/
+.custom-context-menu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  display: none;
+  z-index: 10000;
+  min-width: 150px;
+  font-family: Arial, sans-serif;
+}
+
+.custom-context-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 5px 0;
+}
+
+.custom-context-menu li {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.custom-context-menu li:hover {
+  background-color: #f0f0f0;
+}
+
+/* ---------------------------------------
+   Disable Text Selection for Certain Elements
+-----------------------------------------*/
+.note,
+#notes-container,
+.active-filters,
+#intro-text,
+.custom-context-menu,
+.custom-context-menu ul li {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version */
+}
+
+/* ---------------------------------------
+   Bottom Sheet
+-----------------------------------------*/
+/* Bottom Sheet Base */
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--background-color);
+  border-radius: 16px 16px 0 0;
+  transition: transform 0.3s ease-out;
+  z-index: 1000;
+  max-height: 90vh;
+  transform: translateY(100%);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: contain; /* Prevent the bottom sheet from causing the page to scroll */
+  will-change: transform;
+}
+
+/* Add backdrop styles */
+.bottom-sheet::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--background-color);
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.bottom-sheet.active::before {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Active State */
+.bottom-sheet.active {
+  transform: translateY(0);
+}
+
+/* Sheet Header - Always visible */
+.sheet-header {
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  z-index: 2;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  /* Ensure header stays on top */
+  flex-shrink: 0;
+}
+
+/* Drag Handle */
+.sheet-drag-handle {
+  width: 40px;
+  height: 4px;
+  background: #dddddd;
+  border-radius: 2px;
+  margin: 0 auto 12px;
+  cursor: grab;
+}
+
+.sheet-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.sheet-title {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.sheet-close-button {
+  position: absolute;
+  right: 0;
+  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+
+@media (hover: hover) {
+  .sheet-close-button:hover {
+    color: #333;
+  }
+}
+
+/* Content Area - Scrollable */
+.sheet-content {
+  flex: 1;
+  overflow-y: auto;
+  /* Hide scrollbar on mobile while keeping functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  padding: 20px;
+  padding-bottom: 80px; /* Increase bottom padding to prevent content from being hidden behind indicator */
+  overscroll-behavior: contain; /* Prevent the bottom sheet from causing the page to scroll */
+}
+
+/* Hide scrollbar for Chrome/Safari/Opera */
+.sheet-content::-webkit-scrollbar {
+  display: none;
+}
+
+/* Content Section */
+.sheet-content section {
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+  /* Add padding at bottom to ensure content clears any fixed elements */
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+.sheet-content h2 {
+  margin: 24px 0 16px;
+}
+
+.sheet-content p {
+  margin-bottom: 16px;
+}
+
+.sheet-content ul {
+  margin: 16px 0;
+  padding-left: 20px;
+}
+
+.sheet-content li {
+  margin-bottom: 8px;
+}
+
+/* Ensure proper stacking context */
+body.sheet-open {
+  overflow: hidden;
+}
+
+/* Media query for larger screens (Desktop)*/
+@media (min-width: 768px) {
+  .bottom-sheet {
+    max-width: 600px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+  }
+
+  .bottom-sheet.active {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Show scrollbar on desktop */
+  .sheet-content {
+    scrollbar-width: thin;
+    -ms-overflow-style: auto;
+  }
+
+  .sheet-content::-webkit-scrollbar {
+    display: block;
+    width: 8px;
+  }
+
+  .sheet-content::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sheet-content {
+    padding: 16px;
+  }
+  .sheet-close-button {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.scroll-indicator {
+  position: absolute; /* Change from absolute to fixed */
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+  border: none;
+  pointer-events: none; /* Initially disable pointer events */
+}
+
+.scroll-indicator.visible {
+  opacity: 1;
+  pointer-events: auto; /* Enable pointer events when visible */
+}
+
+.scroll-indicator:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.bottom-sheet .sheet-content {
+  position: relative;
+  /* Make sure there's enough padding at the bottom for the scroll button */
+  padding-bottom: 70px;
+}

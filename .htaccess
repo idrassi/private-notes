@@ -1,0 +1,67 @@
+# Private Notes - Secure Personal Notes Manager
+# Author: Mounir IDRASSI <mounir@idrix.fr>
+# Date: 2024-11-20
+# License: MIT (https://opensource.org/license/MIT)
+#
+# Description:
+# This .htaccess file contains configurations for security headers,
+# HTTPS enforcement, caching rules, and more.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off [OR]
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Enforce HSTS
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Prevent Clickjacking
+    Header always set X-Frame-Options "DENY"
+
+    # Control Referrer Information
+    Header always set Referrer-Policy "no-referrer"
+
+    # Permissions Policy: Disable unused features
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(), payment=()"
+
+    # Content Security Policy (CSP)
+    Header always set Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' https://notes.idrix.fr; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://cdnjs.cloudflare.com/ajax/libs/font-awesome/; frame-ancestors 'none'; base-uri 'self';"
+
+    # Enable XSS Protection
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Reduce Exposure of Server Information
+    Header unset X-Powered-By
+</IfModule>
+
+# Disable caching for service worker
+<Files "service-worker.js">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</Files>
+
+# Disable caching for version.txt
+<Files "version.txt">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</Files>
+
+# Disable Server Signature
+ServerSignature Off
+
+# Prevent Directory Listing
+Options -Indexes
+
+# Restrict Access to .htaccess File
+<Files ".htaccess">
+    Order allow,deny
+    Deny from all
+</Files>
